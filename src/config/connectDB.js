@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 
-const DB_URL = `mongodb://127.0.0.1:27017/url3`;
+const DB_URL = process.env.MONGODB_URI
 let isConnected = false;
+
 const connectDB = async () => {
   if (isConnected) return console.log(`MongoDB already connected`);
   try {
