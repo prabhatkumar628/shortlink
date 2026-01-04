@@ -1,19 +1,32 @@
 import Url from "../models/url.model.js";
 import { generateUrlKey } from "../utils/idGenerator.js";
+import { UAParser } from "ua-parser-js";
+import geoip from "geoip-lite";
 
 export const createUrl = async (req, res) => {
   try {
     const { urlName } = req.body;
     const { ownerType, ownerId } = req.identity;
+    if (!urlName || !urlName.startsWith("https://")) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Enter a valid link" });
+    }
 
-    const oldData = await Url.findOne({
+    const oldData = await Url.findOneAndDelete({
       urlName: urlName.trim(),
       ownerId,
       ownerType,
     });
-    if (oldData) {
-      await Url.findByIdAndDelete(oldData._id);
-    }
+
+    // const oldData = await Url.findOne({
+    //   urlName: urlName.trim(),
+    //   ownerId,
+    //   ownerType,
+    // });
+    // if (oldData) {
+    //   await Url.findByIdAndDelete(oldData._id);
+    // }
 
     let urlKey;
     let exists = true;
@@ -23,11 +36,30 @@ export const createUrl = async (req, res) => {
       exists = await Url.exists({ urlKey });
     }
 
+    const userIp =
+      req.headers["x-forwarded-for"]?.split(",")[0] ||
+      req.connection.remoteAddress ||
+      req.ip;
+
+    const ua = UAParser(req.headers["user-agent"]);
+    const browserName = ua.browser?.name || "";
+    const osName = ua.os?.name || "";
+    const deviceType = ua.device?.type || "Destop";
+    const location = geoip.lookup(userIp);
+
     const url = await Url.create({
       urlName,
       urlKey,
       ownerType,
       ownerId,
+
+      ip: userIp,
+      userAgent: req.headers["user-agent"] ?? "",
+      browser: browserName,
+      os: osName,
+      device: deviceType,
+      country: location?.country ?? "",
+      city: location?.city ?? "",
     });
 
     res.status(201).json({
@@ -67,7 +99,36 @@ export const getUrl = async (req, res) => {
 export const getShortUrl = async (req, res) => {
   try {
     const { urlKey } = req.params;
-    const url = await Url.findOne({ urlKey });
+    // const url = await Url.findOne({ urlKey });
+    const userIp =
+      req.headers["x-forwarded-for"]?.split(",")[0] ||
+      req.connection.remoteAddress ||
+      req.ip;
+
+    const ua = UAParser(req.headers["user-agent"]);
+    const browserName = ua.browser.name ?? "";
+    const osName = ua.os.name ?? "";
+    const deviceType = ua.device.type ?? "Desktop";
+    const location = geoip.lookup(userIp);
+
+    const url = await Url.findOneAndUpdate(
+      { urlKey },
+      {
+        $push: {
+          clickHistory: {
+            time: new Date(),
+            ip: userIp,
+            userAgent: req.headers["user-agent"] ?? "",
+            browser: browserName,
+            os: osName,
+            device: deviceType,
+            country: location?.country ?? "",
+            city: location?.city ?? "",
+          },
+        },
+      }
+    );
+
     if (!url) {
       return res.status(404).json({
         success: false,

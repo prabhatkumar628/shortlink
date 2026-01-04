@@ -25,6 +25,26 @@ const urlSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    ip: String, // User IP
+    userAgent: String, // Browser + OS ka raw data
+    browser: String, // Chrome, Safari, Firefox
+    os: String, // Windows, Android, iOS
+    device: String, // Mobile, Desktop, Tablet
+    country: String, // India, USA...
+    city: String, // Jabalpur, Patna...
+    clickHistory: [
+      {
+        time: { type: Date, default: Date.now }, // Click time (required)
+        ip: String, // User IP
+        userAgent: String, // Browser + OS ka raw data
+        browser: String, // Chrome, Safari, Firefox
+        os: String, // Windows, Android, iOS
+        device: String, // Mobile, Desktop, Tablet
+        country: String, // India, USA...
+        city: String, // Jabalpur, Patna...
+      },
+    ],
   },
   { timestamps: true }
 );

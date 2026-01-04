@@ -42,15 +42,11 @@ app.use(
 
 import router from "./routes/index.route.js";
 import { getShortUrl } from "./controllers/url.controller.js";
-app.get("/:urlKey",getShortUrl)
-app.use("/api/v1/",router)
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    success: true,
-    status: "OK",
-    message: "Server is running",
-  });
-});
+app.get("/:urlKey", getShortUrl);
+app.use("/api/v1/", router);
+app.get("/health", (req, res) => res.json({ success: true }));
+
+
 // ❌❌❌ ALL ROUTES KE BAAD
 app.use((req, res) => {
   res.status(404).json({
@@ -59,7 +55,5 @@ app.use((req, res) => {
     path: req.originalUrl,
   });
 });
-
-
 
 export default app;
