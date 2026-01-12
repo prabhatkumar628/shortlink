@@ -182,8 +182,7 @@ export const logout = async (req, res) => {
     }
     return res
       .status(200)
-      .clearCookie("authToken", { path: "/" })
-      .clearCookie("guestId", { path: "/" })
+      .clearCookie("authToken", options)
       .json({ success: true });
   } catch (error) {
     return res.status(500).json({
