@@ -18,6 +18,7 @@ const allowedOrigin = [
   "http://localhost:3000",
   "http://localhost:5173",
   process.env.CLIENT_URL_PROD,
+  process.env.CLIENT_URL_PROD2,
 ].filter(Boolean);
 
 app.use(
