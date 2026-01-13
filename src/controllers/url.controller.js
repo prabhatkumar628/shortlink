@@ -143,3 +143,20 @@ export const getShortUrl = async (req, res) => {
     });
   }
 };
+
+export const deleteUrlById = async (req, res) => {
+  try {
+    const { urlId } = req.params;
+    const urlRes = await Url.findByIdAndDelete(urlId);
+    res
+      .status(200)
+      .json({ success: true, message: "Url deleted successfully" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: error.message ?? "Internal server error",
+      });
+  }
+};
